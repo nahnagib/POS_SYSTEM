@@ -13,18 +13,33 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_id');
-            $table->string('order_date');
-            $table->string('order_status');
-            $table->integer('total_products');
-            $table->integer('sub_total')->nullable();
-            $table->integer('vat')->nullable();
-            $table->string('invoice_no')->nullable();
-            $table->integer('total')->nullable();
-            $table->string('payment_status')->nullable();
-            $table->integer('pay')->nullable();
-            $table->integer('due')->nullable();
+
+            // WHO & WHEN
+            $table->dateTime('order_date')->useCurrent(); // default now()
+            $table->string('invoice_no')->unique();       // e.g., INV-000001
+            $table->foreignId('user_id')                  // cashier
+                ->constrained('users')
+                ->restrictOnDelete()
+                ->cascadeOnUpdate();
+
+            // STATUS
+            $table->enum('order_status', ['paid','void','refunded'])->default('paid');
+            $table->enum('payment_status', ['paid','partial','unpaid'])->default('paid');
+            $table->enum('payment_method', ['cash','edfali','mobicash','local_service'])->default('cash');
+
+            // TOTALS (unsigned)
+            $table->unsignedInteger('total_items');          // sum of quantities
+            $table->unsignedDecimal('sub_total', 10, 2);
+            $table->unsignedDecimal('discount', 10, 2)->default(0);
+            $table->unsignedDecimal('vat', 10, 2)->default(0);
+            $table->unsignedDecimal('total', 10, 2);         // grand total
+
             $table->timestamps();
+
+            // helpful indexes
+            $table->index('order_date');
+            $table->index('user_id');
+            $table->index(['payment_method','order_date']);
         });
     }
 

@@ -13,12 +13,35 @@ return new class extends Migration
     {
         Schema::create('order_details', function (Blueprint $table) {
             $table->id();
-            $table->string('order_id');
-            $table->string('product_id');
-            $table->integer('quantity')->nullable();
-            $table->integer('unitcost')->nullable();
-            $table->integer('total')->nullable();
+
+            $table->foreignId('order_id')
+                ->constrained('orders')
+                ->cascadeOnDelete();
+
+            $table->foreignId('product_id')
+                ->constrained('products')
+                ->restrictOnDelete();
+
+            $table->foreignId('variant_id')
+                ->constrained('product_variants')
+                ->restrictOnDelete();
+
+            // SNAPSHOT FIELDS
+            $table->string('product_name');
+            $table->string('variant_name')->nullable();
+            $table->unsignedInteger('quantity');
+            $table->unsignedDecimal('unit_price', 10, 2);
+            $table->unsignedDecimal('line_discount', 10, 2)->default(0);
+            $table->unsignedDecimal('line_total', 10, 2);
+
             $table->timestamps();
+
+            // helpful indexes
+            $table->index('order_id');
+            $table->index('variant_id');
+
+            // Optional: prevent duplicate variant rows within one order
+            // $table->unique(['order_id','variant_id']);
         });
     }
 

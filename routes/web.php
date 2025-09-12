@@ -1,21 +1,76 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Dashboard\ProductController;
-use App\Http\Controllers\Dashboard\ProfileController;
-use App\Http\Controllers\Dashboard\CategoryController;
-use App\Http\Controllers\Dashboard\CustomerController;
-use App\Http\Controllers\Dashboard\EmployeeController;
-use App\Http\Controllers\Dashboard\SupplierController;
-use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\Dashboard\PaySalaryController;
-use App\Http\Controllers\Dashboard\AttendenceController;
-use App\Http\Controllers\Dashboard\AdvanceSalaryController;
-use App\Http\Controllers\Dashboard\DatabaseBackupController;
-use App\Http\Controllers\Dashboard\OrderController;
-use App\Http\Controllers\Dashboard\PosController;
-use App\Http\Controllers\Dashboard\RoleController;
-use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Admin\{
+    DashboardController,
+    ProductController,
+    CategoryController,
+    OrderController,
+    RoleController,
+    UserController
+};
+use App\Http\Controllers\Auth\LoginController;
+
+
+// ---------- Public / Guest ----------
+Route::middleware('guest')->group(function () {
+    // Landing: show login directly (or a public welcome if you want)
+    Route::get('/', [LoginController::class, 'showLoginForm'])->name('home');
+
+    // Auth
+    Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.attempt');
+});
+
+// ---------- Logout (must be authenticated) ----------
+Route::post('/logout', [LoginController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
+
+// ---------- Authenticated redirect hub ----------
+Route::get('/dashboard', function () {
+    $u = auth()->user();
+    if (!$u) return redirect()->route('login');
+
+    // Redirect by role (Spatie)
+    if ($u->hasRole('admin'))   return redirect()->route('admin.dashboard');
+    if ($u->hasRole('cashier')) return redirect()->route('cashier.pos');
+
+    // Fallback if no role yet
+    return redirect()->route('admin.dashboard');
+})->middleware('auth')->name('dashboard');
+
+
+
+
+Route::middleware(['auth','role:admin'])
+    ->prefix('admin')
+    ->as('admin.')
+    ->group(function () {
+        
+        // Dashboard
+        Route::get('/', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // Products (with variants inside form)
+        Route::resource('products', ProductController::class);
+
+        // Categories
+        Route::resource('categories', CategoryController::class)
+            ->except(['show']); // rarely needed
+
+        // Orders (read-only, admin can also delete/void)
+        Route::resource('orders', OrderController::class)
+            ->only(['index','show','destroy']);
+
+        // Roles (Spatie)
+        Route::resource('roles', RoleController::class)
+            ->only(['index','store','update','destroy']);
+
+        // Users (assign roles)
+        Route::resource('users', UserController::class)
+            ->only(['index','store','update','destroy']);
+    });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +81,7 @@ use App\Http\Controllers\Dashboard\UserController;
 | routes are loaded by the RouteServiceProvider and all of them will
 | be assigned to the "web" middleware group. Make something great!
 |
-*/
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -159,3 +214,8 @@ Route::middleware(['permission:roles.menu'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+*/
+
+// ====================
+// Admin routes
+// ====================

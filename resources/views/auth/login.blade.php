@@ -1,62 +1,56 @@
-@extends('auth.body.main')
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تسجيل الدخول</title>
+  <style>
+    :root { color-scheme: dark light; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu}
+    .wrap{min-height:100dvh;display:grid;place-items:center;background:#f6f7f8}
+    .card{width:100%;max-width:380px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:22px}
+    label{display:block;margin-top:12px;margin-bottom:6px;color:#444}
+    input[type="email"],input[type="password"]{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px}
+    .btn{width:100%;margin-top:16px;padding:10px;border-radius:8px;border:1px solid #111;background:#111;color:#fff}
+    .muted{color:#666;font-size:12px;margin-top:10px}
+    .error{background:#fee2e2;border:1px solid #ef4444;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:12px}
+    .brand{font-weight:700;font-size:18px;text-align:center;margin-bottom:10px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <form class="card" method="POST" action="{{ route('login.attempt') }}">
+    @csrf
+    <div class="brand">Luxury POS</div>
 
-@section('container')
-<div class="row align-items-center justify-content-center height-self-center">
-    <div class="col-lg-8">
-        <div class="card auth-card">
-            <div class="card-body p-0">
-                <div class="d-flex align-items-center auth-content">
-                    <div class="col-lg-7 align-self-center">
-                        <div class="p-3">
+    @if ($errors->any())
+      <div class="error">
+        <ul style="padding-left:18px;margin:0">
+          @foreach ($errors->all() as $err)
+            <li>{{ $err }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
 
-                            <h2 class="mb-2">Log In</h2>
-                            <p>Login to stay connected.</p>
+    <label>البريد الإلكتروني</label>
+    <input type="email" name="email" value="{{ old('email') }}" required autofocus>
 
-                            <form action="{{ route('login') }}" method="POST">
-                                @csrf
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="floating-label form-group">
-                                            <input class="floating-input form-control @error('email') is-invalid @enderror @error('username') is-invalid @enderror" type="text" name="input_type" placeholder=" " value="{{ old('input_type') }}" autocomplete="off" required autofocus>
-                                            <label>Email/Username</label>
-                                        </div>
-                                        @error('username')
-                                        <div class="mb-4" style="margin-top: -20px">
-                                            <div class="text-danger small">Incorrect username or password.</div>
-                                        </div>
-                                        @enderror
-                                        @error('email')
-                                        <div class="mb-4" style="margin-top: -20px">
-                                            <div class="text-danger small">Incorrect username or password.</div>
-                                        </div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-lg-12">
-                                        <div class="floating-label form-group">
-                                            <input class="floating-input form-control @error('email') is-invalid @enderror @error('username') is-invalid @enderror" type="password" name="password" placeholder=" " required>
-                                            <label>Password</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <p>
-                                            Not a Member yet? <a href="{{ route('register') }}" class="text-primary">Register</a>
-                                        </p>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <a href="#" class="text-primary float-right">Forgot Password?</a>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Login</button>
-                            </form>
-                        </div>
-                    </div>
+    <label>كلمة المرور</label>
+    <input type="password" name="password" required>
 
-                    <div class="col-lg-5 content-right">
-                        <img src="{{ asset('assets/images/login/01.png') }}" class="img-fluid image-right" alt="">
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div style="margin-top:10px">
+      <label style="display:flex;align-items:center;gap:8px">
+        <input type="checkbox" name="remember" value="1"> تذكرني
+      </label>
     </div>
+
+    <button class="btn">تسجيل الدخول</button>
+
+    <div class="muted">
+      جرّب: admin@pos.local / admin123 أو cashier@pos.local / cashier123
+    </div>
+  </form>
 </div>
-@endsection
+</body>
+</html>

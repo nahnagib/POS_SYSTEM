@@ -13,18 +13,24 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string('product_name');
-            $table->integer('category_id');
-            $table->integer('supplier_id');
-            $table->string('product_code')->nullable();
-            $table->string('product_garage')->nullable();
-            $table->string('product_image')->nullable();
-            $table->integer('product_store')->nullable();
-            $table->date('buying_date')->nullable();
-            $table->string('expire_date')->nullable();
-            $table->integer('buying_price')->nullable();
-            $table->integer('selling_price')->nullable();
+
+            // Base product info (no price/stock/barcode here)
+            $table->string('name');                    // e.g., "Dior Sauvage"
+            $table->string('brand')->nullable();
+            $table->string('sku')->nullable()->unique();
+
+            // Relations (optional/nullable to keep POS fast)
+            $table->foreignId('category_id')->nullable()
+                  ->constrained('categories')->nullOnDelete()->cascadeOnUpdate();
+
+            // Alerts / flags
+            $table->boolean('track_stock')->default(true);
+            $table->unsignedInteger('low_stock_threshold')->default(2);
+            $table->boolean('is_active')->default(true);
+
             $table->timestamps();
+
+            $table->index(['name', 'brand']);
         });
     }
 

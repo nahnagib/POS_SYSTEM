@@ -46,8 +46,7 @@ class ProductController extends Controller
     public function create()
     {
         return view('products.create', [
-            'categories' => Category::all(),
-            'suppliers' => Supplier::all(),
+            'categories' => Category::all()
         ]);
     }
 
@@ -120,7 +119,6 @@ class ProductController extends Controller
     {
         return view('products.edit', [
             'categories' => Category::all(),
-            'suppliers' => Supplier::all(),
             'product' => $product
         ]);
     }
