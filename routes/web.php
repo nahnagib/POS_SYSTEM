@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\{
     UserController
 };
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\POS\PosController;
+
 
 
 // ---------- Public / Guest ----------
@@ -71,6 +73,59 @@ Route::middleware(['auth','role:admin'])
             ->only(['index','store','update','destroy']);
     });
 
+
+
+
+
+
+Route::middleware(['auth','role:cashier'])
+    ->prefix('cashier')
+    ->as('cashier.')
+    ->group(function () {
+        
+        // ---------- POS main screen ----------
+        Route::get('/', function () {
+            return view('cashier.pos'); // or controller action if you want
+        })->name('pos');
+
+        // ---------- Lookups ----------
+        Route::get('/lookup/barcode/{code}', [PosController::class, 'lookupByBarcode'])
+            ->name('lookup.barcode');
+
+        Route::get('/lookup/variant/{variantId}', [PosController::class, 'lookupByVariantId'])
+            ->name('lookup.variant');
+
+        // ---------- Order lifecycle ----------
+        Route::post('/orders', [PosController::class, 'startOrder'])
+            ->name('orders.start');
+
+        Route::post('/orders/{order}/items', [PosController::class, 'addItem'])
+            ->name('orders.items.add');
+
+        Route::patch('/orders/{order}/items/{detail}', [PosController::class, 'updateItem'])
+            ->name('orders.items.update');
+
+        Route::delete('/orders/{order}/items/{detail}', [PosController::class, 'removeItem'])
+            ->name('orders.items.remove');
+
+        // ---------- Discounts ----------
+        Route::post('/orders/{order}/apply-discount', [PosController::class, 'applyOrderDiscount'])
+            ->name('orders.discount');
+
+        // ---------- Payments / checkout ----------
+        Route::post('/orders/{order}/set-payment', [PosController::class, 'setPayment'])
+            ->name('orders.payment');
+
+        Route::post('/orders/{order}/checkout', [PosController::class, 'checkout'])
+            ->name('orders.checkout');
+
+        // ---------- Post-sale actions ----------
+        Route::post('/orders/{order}/void', [PosController::class, 'void'])
+            ->name('orders.void');
+
+        Route::post('/orders/{order}/refund', [PosController::class, 'refund'])
+            ->name('orders.refund');
+    });
 
 /*
 |--------------------------------------------------------------------------
